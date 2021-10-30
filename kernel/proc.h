@@ -105,4 +105,20 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  int tracemask; 
+  int ctime;
+
+  int time_start;              // Start time of process
+  int time_run;                // Run time of process
+  int time_end;                // End time of process
+  int time_wait;               // Waiting time for cpu in queue
+  int total_wait;              // Net total waiting time of process
+
+  int n_run;                   // number of times alloted cpu
+  int priority;                // priority of process
+  int age;                     // age of process (PBS)
+
+  int in_queue;                // is the process in some queue? 
+  int q_ticks[5];              // ticks spent in the 5 queues
+  int cpu_ticks;               // ticks spent while running on 
 };
