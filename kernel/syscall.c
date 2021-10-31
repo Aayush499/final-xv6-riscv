@@ -104,9 +104,9 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_wait(void);
 extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
-extern uint64 sys_trace(void);  // *
-
-
+extern uint64 sys_trace(void);
+extern uint64 sys_set_priority(void);
+extern uint64 sys_waitx(void);
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -130,10 +130,12 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_trace]   sys_trace,  // *
+[SYS_trace]   sys_trace,
+[SYS_set_priority] sys_set_priority,
+[SYS_waitx]   sys_waitx
 };
 
-char *syscallnames[] = {
+static char *syscall_names[] = {
 [SYS_fork]    "fork",
 [SYS_exit]    "exit",
 [SYS_wait]    "wait",
@@ -156,9 +158,10 @@ char *syscallnames[] = {
 [SYS_mkdir]   "mkdir",
 [SYS_close]   "close",
 [SYS_trace]   "trace",
- };
+[SYS_set_priority] "set_priority",
+};
 
- int syscallnumargs[] = {
+int syscallnumargs[] = {
 [SYS_fork] 0,
 [SYS_exit] 1,
 [SYS_wait] 1,
@@ -181,7 +184,9 @@ char *syscallnames[] = {
 [SYS_mkdir] 1,
 [SYS_close] 1,
 [SYS_trace] 1,
+[SYS_set_priority] 2,
 };
+
 void
 syscall(void)
 {
@@ -189,28 +194,23 @@ syscall(void)
   struct proc *p = myproc();
 
   num = p->trapframe->a7;
+  int len = syscallnumargs[num];
+  int args[len];
+  
+  for (int i = 0; i < len; i++)
+    args[i] = argraw(i);
+
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     p->trapframe->a0 = syscalls[num]();
-  } else {
-    printf("%d %s: unknown sys call %d\n",
-            p->pid, p->name, num);
-    p->trapframe->a0 = -1;
+    if(p->tracemask & 1 << num){
+      printf("%d: syscall %s (", p->pid, syscall_names[num]);
+      for (int i = 0; i < len; i++)
+        printf("%d ", args[i]);
+      printf("\b) -> %d\n", argraw(0));
+    }
   }
-   if (p->tracemask >> num) {
-	  printf("%d: syscall %s (", 
-			  p->pid, syscallnames[num]);
-        for (int i = 0; i < syscallnumargs[num]; i++){
-        if (i == 0)
-          printf("%d ", p->trapframe->a7);
-        else if (i == 1)
-          printf("%d ", p->trapframe->a1);
-        else if (i == 2)
-          printf("%d ", p->trapframe->a2);
-        else if (i == 3)
-          printf("%d ", p->trapframe->a3);
-        else if (i == 4)
-          printf("%d ", p->trapframe->a4);
-      }
-        printf(") -> %d\n", p->trapframe->a0);
+  else {
+    printf("%d %s: unknown sys call %d\n", p->pid, p->name, num);
+    p->trapframe->a0 = -1;
   }
 }

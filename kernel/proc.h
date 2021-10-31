@@ -106,19 +106,59 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int tracemask; 
-  int ctime;
+   // FCFS
+  uint64 ctime;                // Creation time of the process
 
-  int time_start;              // Start time of process
-  int time_run;                // Run time of process
-  int time_end;                // End time of process
+  // PBS
+  uint64 rtime;                  // run time for the process in the current run
+  uint64 priority;               // Priority for the current process
+  uint64 num_runs;               // Number of times the process is executed
+  uint64 starttime;              // Start time for the process
+  uint64 sleeptime;              // time the process spends sleeping
+  uint64 total_rtime;            // Total run time for the process
+
+  //int time_start;              // Start time of process
+  //int rtime;                // Run time of process
+  int etime;                // End time of process
   int time_wait;               // Waiting time for cpu in queue
   int total_wait;              // Net total waiting time of process
-
-  int n_run;                   // number of times alloted cpu
-  int priority;                // priority of process
-  int age;                     // age of process (PBS)
+  int trtime;
+  // int nrun;                   // number of times alloted cpu
+  // int priority;                // priority of process
+  //int age;                     // age of process (PBS)
 
   int in_queue;                // is the process in some queue? 
   int q_ticks[5];              // ticks spent in the 5 queues
-  int cpu_ticks;               // ticks spent while running on 
+  int cpu_ticks;               // ticks spent while running on cpu
+  int time_start;
+  uint reset_ticks;            // Stores the last time process was scheduled
+ 
+  int cur_queue;               // Current queue
+  int ticks[5];         // Number of ticks the process receives at the `i`th queue
+
 };
+
+// #define RR 0
+// #define FCFS 1
+// #define PBS 2
+// #define MLFQ 3
+
+
+// // nodes of any queue of processes
+// struct node
+// {
+//   struct node *next;
+//   struct proc *proc;
+// };
+// // queues for the different levels of mlfq scheduling
+// struct Queue
+// {
+//   struct node *head;
+//   struct node *tail;
+//   int len;
+// };
+
+// struct node free_nodes[NPROC];
+// struct Queue queues[5]; // queues for mlfq scheduling
+
+// #define WAIT_LIMIT 10
