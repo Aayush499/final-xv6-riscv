@@ -245,6 +245,7 @@ p->trtime = 0;
  p->priority = 60;
 p->etime = 0;
 p->total_wait = 0;
+
     ```
 
 -   Added user implementation of set_priority
@@ -296,6 +297,7 @@ p->total_wait = 0;
 #### MLFQ
 
 -   MLFQ used 5 priority queues as specified, as as specified, teh intiiated process gets pushed to te highest priority, now, all processes in higher priority must be executed before any lower priority process is run. Preemption (forcefull putting a process in wait state) is used if ta process exceeds its queue's time slice and it is placed ina  lower queue. But this means that processes that relinquish control like in the given exacmple of IO processes can relinquish control right as the time slice is used up but stay at the same priority level. This way, a process can use this strategy to make sure it's priority never goes down and gets more cpu time despite its higher number of runs.
+
 ### Spec 3
 
 -   In the struct proc, added a variable, total run time, `total_rtime` which calculates the total running time of the process in the struct proc
